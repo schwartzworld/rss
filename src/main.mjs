@@ -1,20 +1,61 @@
+import Parser from 'rss-parser';
 import {createTable, dropTable} from "./createTable.mjs";
 import {db} from "../index.mjs";
-import {addRow} from "./addRow.mjs";
-import {nap} from "./nap.mjs";
-import {sleep} from "./sleep.mjs";
 import {serve} from "./serve.mjs";
 
-const getRecord = (args) => db.each(`SELECT * FROM naps`, (e, r) => {
-    if (e) return console.error(e);
-    console.log(r)
-});
+const parser = new Parser();
+
+const handle = (error) => {
+    console.log(error.message);
+    process.exit();
+};
+
+class Feeds {
+    static add = (url) => {
+        if (url) db.run(`INSERT INTO feeds (url) VALUES('${url}');`, (e) => {
+            if (e) handle(e);
+
+            console.log(`${url} added to feeds`)
+            process.exit();
+        })
+    }
+
+    static getAll = (cb) => {
+        db.all(`SELECT url FROM feeds`, (e, rows) => {
+            if (e) handle(e);
+            if (cb) cb(rows.map(row => row.url));
+        })
+    }
+    static build = () => {
+        Feeds.getAll(async (rows) => {
+            let feed = await parser.parseURL(rows[2]);
+            const query = feed.items.map(({link, pubDate, title, contentSnippet, ...rest}) => {
+                const fullContent = rest['content:encoded'];
+                return `INSERT INTO posts (`
+            });
+            console.log({query})
+            process.exit();
+        })
+    }
+}
+/*
+id INTEGER PRIMARY KEY,
+        link STRING NOT NULL UNIQUE,
+        title STRING NOT NULL,
+        description STRING,
+        published STRING,
+        content STRING
+ */
 
 export const main = ([command, ...args]) => {
     switch (command) {
         case '--add':
         case '-a':
-            addRow(args);
+            Feeds.add(...args)
+            break;
+        case '--build':
+        case '-b':
+            Feeds.build(...args)
             break;
         case '--create':
         case '-c':
@@ -24,38 +65,11 @@ export const main = ([command, ...args]) => {
         case '-d':
             dropTable(args);
             break;
-        case '--nap':
-        case '-n':
-            nap.add(args);
-            break;
-        case '--sleep':
-        case '-s':
-            sleep.add(args);
-            break;
-        case '--endnap':
-        case '-en':
-            nap.end(args);
-            break;
-        case '--endsleep':
-        case '-es':
-            sleep.end(args);
-            break;
-        case '--get':
-        case '-g':
-            getRecord(args);
-            break;
         case '-rrr':
             dropTable(() => createTable(args));
             break;
-        case '--sleeps':
-            sleep.all();
-            break;
-        case '--serve':
-            serve();
-            break;
-        case '--naps':
         default:
-            nap.all();
+            serve();
     }
 
     process.stdin.resume();//so the program will not close instantly

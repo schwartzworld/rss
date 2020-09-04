@@ -1,17 +1,15 @@
 import {db} from "../index.mjs";
 
 export const createTable = ([tableName, ...args]) => {
-    db.run(`CREATE TABLE sleeps (
+    db.run(`CREATE TABLE feeds (
         id INTEGER PRIMARY KEY,
-        kid_id INTEGER NOT NULL,
-        start_time INT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        end_time INTEGER,
-        difficulty INTEGER
+        url STRING NOT NULL
+        
 );`)
 }
 
 export const dropTable = (cb) => {
-   db.run(`DROP TABLE sleeps;`, (e) => {
+   db.run(`DROP TABLE feeds;`, (e) => {
        if (e) return console.error(e);
        console.log('Dropped nap table')
        if (typeof cb === 'function') cb();
