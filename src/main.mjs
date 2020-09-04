@@ -1,21 +1,14 @@
 import {createTable, dropTable} from "./createTable.mjs";
 import {db} from "../index.mjs";
 import {addRow} from "./addRow.mjs";
-import {addNap, endNap} from "./addNap.mjs";
+import {nap} from "./nap.mjs";
+import {sleep} from "./sleep.mjs";
+import {serve} from "./serve.mjs";
 
 const getRecord = (args) => db.each(`SELECT * FROM naps`, (e, r) => {
     if (e) return console.error(e);
     console.log(r)
 });
-
-export const getAll = () => {
-    let query = `select k.name, n.start_time, n.end_time from kids k inner join naps n on k.id=n.kid_id`;
-
-    db.all(query, (e, rows) => {
-        rows.forEach(r => console.log(r))
-    });
-
-}
 
 export const main = ([command, ...args]) => {
     switch (command) {
@@ -33,42 +26,62 @@ export const main = ([command, ...args]) => {
             break;
         case '--nap':
         case '-n':
-            addNap(args);
+            nap.add(args);
+            break;
+        case '--sleep':
+        case '-s':
+            sleep.add(args);
             break;
         case '--endnap':
         case '-en':
-            endNap(args);
+            nap.end(args);
+            break;
+        case '--endsleep':
+        case '-es':
+            sleep.end(args);
             break;
         case '--get':
         case '-g':
             getRecord(args);
             break;
-
         case '-rrr':
             dropTable(() => createTable(args));
-
             break;
+        case '--sleeps':
+            sleep.all();
+            break;
+        case '--serve':
+            serve();
+            break;
+        case '--naps':
         default:
-            getAll();
+            nap.all();
     }
 
-    /*
-    console.log({a, b})
-    if (p.length > 0) {
-        db.run(`INSERT INTO langs(name) VALUES ${p.map(q => '(?)').join(',')}`, p);
-    }*/
+    process.stdin.resume();//so the program will not close instantly
 
+    function exitHandler(options, exitCode) {
+        console.log(options, exitCode)
+        db.close(e => {
+            if (e) console.error('error: ' + e.message);
+            if (options.cleanup) console.log('clean');
+            if (exitCode || exitCode === 0) console.log(exitCode);
+            if (options.exit) process.exit();
+            console.log('Closed')
+        });
+    }
 
-    /*db.serialize(() => {
-        db.each('select * from langs', function (e, r) {
-            if (e) throw e;
-            console.log(r)
-        })
-    })*/
+//do something when app is closing
+    process.on('exit', exitHandler.bind(null,{cleanup:true}));
 
-    db.close(e => {
-        if (e) console.error(e.message);
-        console.log('Closed')
-    });
+//catches ctrl+c event
+    process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+    process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+    process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+    process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
 }
