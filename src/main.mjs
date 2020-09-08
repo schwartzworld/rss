@@ -26,9 +26,9 @@ class Post {
             return posts;
         }
         init().then((posts) => {
-            posts.forEach({link, title, pubDate} => {
-                console.log()
-                // db.run(`INSERT INTO posts (link, title, description, published) VALUES();`)
+            posts.forEach(({link, title, pubDate, content}) => {
+                console.log(link, title, pubDate, content)
+                db.run(`INSERT INTO posts (link, title, pubDate) VALUES('${link}', '${title}', '${pubDate}');`)
             })
         }).catch(e => console.error(e));
     }
