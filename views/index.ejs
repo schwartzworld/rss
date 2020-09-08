@@ -8,18 +8,54 @@
     <!--[if IE]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <style>
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        summary {
+            display: flex;
+            justify-content: space-between;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .buttons > button {
+            background: blue;
+            margin: 2px 0;
+        }
+    </style>
 </head>
 
 <body id="home">
 
-<h1>Sleep Tracker!</h1>
+<h1>RSS Feed</h1>
 <div>
-    <h2>Choose an option</h2>
-    <nav>
-        <ul>
-            <li><a href="/nap">Add a nap</a></li>
-        </ul>
-    </nav>
+    <ul>
+        <% posts.map((post) => { %>
+            <li>
+                <details>
+                    <summary>
+                        <div>
+                            <h3><a href="<%= post.link %>"><%= post.title %></a></h3>
+                            <%= new Date(post.pubDate).toDateString() %>
+                        </div>
+                        <div class="buttons">
+                            <button>Hide Post</button>
+                        </div>
+                    </summary>
+                    <div><%- post.description %></div>
+                </details>
+            </li>
+        <% })%>
+    </ul>
+        <a href="<%= previous %>">previous page</a>
+        <a href="<%= next %>">next page</a>
 </div>
 </body>
 </html>

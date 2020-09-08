@@ -28,12 +28,11 @@ class ParsedFeed {
 
                 return {
                     ...item,
-                    pubDate: new Date(item.pubDate)
+                    pubDate: new Date(item.pubDate).valueOf(),
                 };
             });
             return posts.map(({link, title, pubDate, content}) => {
-                console.log(link)
-                return `('${ParsedFeed.sanitize(link)}', '${ParsedFeed.sanitize(title)}', '${pubDate}')`
+                return `('${ParsedFeed.sanitize(link)}', '${ParsedFeed.sanitize(title)}', '${pubDate}', '${ParsedFeed.sanitize(content)}')`
             });
         } catch (e) {
             console.error(e.message)
@@ -64,7 +63,7 @@ class Feeds {
                     return ParsedFeed.build(row)
                 }));
                 const feed = [...values].join(',')
-                const query = `INSERT or IGNORE INTO posts (link, title, pubDate) VALUES ${feed};`;
+                const query = `INSERT or IGNORE INTO posts (link, title, pubDate, description) VALUES ${feed};`;
                 db.run(query, (e) => {
                     if (e) return handle(e);
                     console.log(`${values.length} added`)
