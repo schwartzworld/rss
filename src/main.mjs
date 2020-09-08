@@ -10,6 +10,30 @@ const handle = (error) => {
     process.exit();
 };
 
+class Post {
+    constructor(url) {
+        const init = async () => {
+            const feed = await parser.parseURL(url);
+            const posts = feed.items.map(item => {
+                delete item['content:encoded'];
+                delete item['content:encodedSnippet'];
+
+                return {
+                    ...item,
+                    pubDate: new Date(item.pubDate)
+                };
+            });
+            return posts;
+        }
+        init().then((posts) => {
+            posts.forEach({link, title, pubDate} => {
+                console.log()
+                // db.run(`INSERT INTO posts (link, title, description, published) VALUES();`)
+            })
+        }).catch(e => console.error(e));
+    }
+}
+
 class Feeds {
     static add = (url) => {
         if (url) db.run(`INSERT INTO feeds (url) VALUES('${url}');`, (e) => {
@@ -27,14 +51,14 @@ class Feeds {
         })
     }
     static build = () => {
-        Feeds.getAll(async (rows) => {
-            let feed = await parser.parseURL(rows[2]);
-            const query = feed.items.map(({link, pubDate, title, contentSnippet, ...rest}) => {
-                const fullContent = rest['content:encoded'];
-                return `INSERT INTO posts (`
-            });
-            console.log({query})
-            process.exit();
+        Feeds.getAll( (rows) => {
+            db.all(`SELECT link FROM posts;`, async (links = []) => {
+                let feed = await rows.map(row => {
+                    if (Array.isArray(links) && links.some(link => link.link === row.link)) return null;
+                    return new Post(row)
+                });
+                console.log(feed)
+            })
         })
     }
 }

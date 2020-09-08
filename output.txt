@@ -1,0 +1,14 @@
+Connected
+[
+  undefined, undefined,
+  undefined, undefined,
+  undefined, undefined,
+  undefined, undefined,
+  undefined, undefined
+]
+{ exit: true } SIGINT
+SIGINT
+{ cleanup: true } 0
+clean
+0
+Closed

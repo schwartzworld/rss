@@ -9,4 +9,3 @@ export const db = new s.Database('./feeds.db', (err) => {
 	main(rest);
 	console.log('Connected')
 });
-
