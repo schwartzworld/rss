@@ -5,16 +5,24 @@ import {serve} from "./serve.mjs";
 
 const parser = new Parser();
 
-const handle = (error) => {
-    console.log(error.message);
+const handle = (error, ...rest) => {
+    console.log(error.message, ...rest);
     process.exit();
 };
 
-class Post {
-    constructor(url) {
-        const init = async () => {
+class ParsedFeed {
+    static sanitize = (str) => {
+        try {
+            return str.replace(/'/g, '"');
+        } catch (e) {
+            console.error(str, e.message);
+            return String(str);
+        }
+    }
+    static build = async (url) => {
+        try {
             const feed = await parser.parseURL(url);
-            const posts = feed.items.map(item => {
+            const posts = await feed.items.map(item => {
                 delete item['content:encoded'];
                 delete item['content:encodedSnippet'];
 
@@ -23,14 +31,13 @@ class Post {
                     pubDate: new Date(item.pubDate)
                 };
             });
-            return posts;
+            return posts.map(({link, title, pubDate, content}) => {
+                console.log(link)
+                return `('${ParsedFeed.sanitize(link)}', '${ParsedFeed.sanitize(title)}', '${pubDate}')`
+            });
+        } catch (e) {
+            console.error(e.message)
         }
-        init().then((posts) => {
-            posts.forEach(({link, title, pubDate, content}) => {
-                console.log(link, title, pubDate, content)
-                db.run(`INSERT INTO posts (link, title, pubDate) VALUES('${link}', '${title}', '${pubDate}');`)
-            })
-        }).catch(e => console.error(e));
     }
 }
 
@@ -53,11 +60,15 @@ class Feeds {
     static build = () => {
         Feeds.getAll( (rows) => {
             db.all(`SELECT link FROM posts;`, async (links = []) => {
-                let feed = await rows.map(row => {
-                    if (Array.isArray(links) && links.some(link => link.link === row.link)) return null;
-                    return new Post(row)
+                let values = await Promise.all(rows.map(row => {
+                    return ParsedFeed.build(row)
+                }));
+                const feed = [...values].join(',')
+                const query = `INSERT or IGNORE INTO posts (link, title, pubDate) VALUES ${feed};`;
+                db.run(query, (e) => {
+                    if (e) return handle(e);
+                    console.log(`${values.length} added`)
                 });
-                console.log(feed)
             })
         })
     }
@@ -99,7 +110,6 @@ export const main = ([command, ...args]) => {
     process.stdin.resume();//so the program will not close instantly
 
     function exitHandler(options, exitCode) {
-        console.log(options, exitCode)
         db.close(e => {
             if (e) console.error('error: ' + e.message);
             if (options.cleanup) console.log('clean');
