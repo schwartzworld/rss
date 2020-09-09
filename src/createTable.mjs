@@ -6,7 +6,8 @@ export const createTable = ([tableName, ...args]) => {
         link STRING NOT NULL UNIQUE,
         title STRING NOT NULL,
         description STRING,
-        pubDate STRING
+        pubDate STRING,
+        hidden BOOLEAN DEFAULT false
 );`)
 }
 

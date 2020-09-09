@@ -16,7 +16,7 @@ class ParsedFeed {
             return str.replace(/'/g, '"');
         } catch (e) {
             console.error(str, e.message);
-            return String(str);
+            return 'invalid';
         }
     }
     static build = async (url) => {
@@ -32,10 +32,11 @@ class ParsedFeed {
                 };
             });
             return posts.map(({link, title, pubDate, content}) => {
-                return `('${ParsedFeed.sanitize(link)}', '${ParsedFeed.sanitize(title)}', '${pubDate}', '${ParsedFeed.sanitize(content)}')`
+                const query = `('${ParsedFeed.sanitize(link)}', '${ParsedFeed.sanitize(title)}', '${pubDate}', '${ParsedFeed.sanitize(content)}')`
+                return query;
             });
         } catch (e) {
-            console.error(e.message)
+            console.error('f', e.message)
         }
     }
 }
@@ -65,7 +66,7 @@ class Feeds {
                 const feed = [...values].join(',')
                 const query = `INSERT or IGNORE INTO posts (link, title, pubDate, description) VALUES ${feed};`;
                 db.run(query, (e) => {
-                    if (e) return handle(e);
+                    if (e) return handle(e, query);
                     console.log(`${values.length} added`)
                 });
             })

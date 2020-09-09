@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>HTML5 boilerplate – all you really need…</title>
+    <title>Reddit style RSS</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
     <!--[if IE]>
@@ -34,19 +34,31 @@
 
 <body id="home">
 
+<script>
+    const hide = async (id) => {
+        const res = await fetch(`/hide/${id}`, {
+            method: 'POST'
+        })
+        if (res.ok) {
+            location.reload();
+            return false;
+        }
+    }
+</script>
 <h1>RSS Feed</h1>
 <div>
     <ul>
         <% posts.map((post) => { %>
-            <li>
+            <li id='post-<%= post.id %>'>
                 <details>
                     <summary>
                         <div>
                             <h3><a href="<%= post.link %>"><%= post.title %></a></h3>
+                            <small><%= post.link.split('/')[2] %></small>
                             <%= new Date(post.pubDate).toDateString() %>
                         </div>
                         <div class="buttons">
-                            <button>Hide Post</button>
+                            <button onclick="hide(<%= post.id %>)">Hide Post</button>
                         </div>
                     </summary>
                     <div><%- post.description %></div>
