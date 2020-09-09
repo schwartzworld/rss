@@ -35,8 +35,8 @@
 <body id="home">
 
 <script>
-    const hide = async (id) => {
-        const res = await fetch(`/hide/${id}`, {
+    const unhide = async (id) => {
+        const res = await fetch(`/unhide/${id}`, {
             method: 'POST'
         })
         if (res.ok) {
@@ -46,20 +46,10 @@
     }
 </script>
 <h1>RSS Feed</h1>
-<h2>Active Feed</h2>
+<h2>Hidden posts</h2>
 <nav>
     <ul>
-        <li><a href="/hidden">Show Hidden Posts</a></li>
-        <li>
-            <details>
-                <summary>Filter by Source</summary>
-                <ul>
-                    <li> <a href="#">Source 1</a></li>
-                    <li> <a href="#">Source 2</a></li>
-                    <li> <a href="#">Source 3</a></li>
-                </ul>
-            </details>
-        </li>
+        <li><a href="/">Back to Feed</a></li>
     </ul>
 </nav>
 <div>
@@ -74,7 +64,7 @@
                             <%= new Date(post.pubDate).toDateString() %>
                         </div>
                         <div class="buttons">
-                            <button onclick="hide(<%= post.id %>)">Hide Post</button>
+                            <button onclick="unhide(<%= post.id %>)">Unhide Post</button>
                         </div>
                     </summary>
                     <div><%- post.description %></div>

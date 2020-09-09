@@ -1,78 +1,8 @@
-import Parser from 'rss-parser';
 import {createTable, dropTable} from "./createTable.mjs";
 import {db} from "../index.mjs";
 import {serve} from "./serve.mjs";
+import {Feed} from "./models/Feed.mjs";
 
-const parser = new Parser();
-
-const handle = (error, ...rest) => {
-    console.log(error.message, ...rest);
-    process.exit();
-};
-
-class ParsedFeed {
-    static sanitize = (str) => {
-        try {
-            return str.replace(/'/g, '"');
-        } catch (e) {
-            console.error(str, e.message);
-            return 'invalid';
-        }
-    }
-    static build = async (url) => {
-        try {
-            const feed = await parser.parseURL(url);
-            const posts = await feed.items.map(item => {
-                delete item['content:encoded'];
-                delete item['content:encodedSnippet'];
-
-                return {
-                    ...item,
-                    pubDate: new Date(item.pubDate).valueOf(),
-                };
-            });
-            return posts.map(({link, title, pubDate, content}) => {
-                const query = `('${ParsedFeed.sanitize(link)}', '${ParsedFeed.sanitize(title)}', '${pubDate}', '${ParsedFeed.sanitize(content)}')`
-                return query;
-            });
-        } catch (e) {
-            console.error('f', e.message)
-        }
-    }
-}
-
-class Feeds {
-    static add = (url) => {
-        if (url) db.run(`INSERT INTO feeds (url) VALUES('${url}');`, (e) => {
-            if (e) handle(e);
-
-            console.log(`${url} added to feeds`)
-            process.exit();
-        })
-    }
-
-    static getAll = (cb) => {
-        db.all(`SELECT url FROM feeds`, (e, rows) => {
-            if (e) handle(e);
-            if (cb) cb(rows.map(row => row.url));
-        })
-    }
-    static build = () => {
-        Feeds.getAll( (rows) => {
-            db.all(`SELECT link FROM posts;`, async (links = []) => {
-                let values = await Promise.all(rows.map(row => {
-                    return ParsedFeed.build(row)
-                }));
-                const feed = [...values].join(',')
-                const query = `INSERT or IGNORE INTO posts (link, title, pubDate, description) VALUES ${feed};`;
-                db.run(query, (e) => {
-                    if (e) return handle(e, query);
-                    console.log(`${values.length} added`)
-                });
-            })
-        })
-    }
-}
 /*
 id INTEGER PRIMARY KEY,
         link STRING NOT NULL UNIQUE,
@@ -86,11 +16,11 @@ export const main = ([command, ...args]) => {
     switch (command) {
         case '--add':
         case '-a':
-            Feeds.add(...args)
+            Feed.add(...args)
             break;
         case '--build':
         case '-b':
-            Feeds.build(...args)
+            Feed.build(...args)
             break;
         case '--create':
         case '-c':
