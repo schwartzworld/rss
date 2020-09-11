@@ -51,6 +51,16 @@
             return false;
         }
     }
+
+    const unhide = async (id) => {
+        const res = await fetch(`/unhide/${id}`, {
+            method: 'POST'
+        })
+        if (res.ok) {
+            location.reload();
+            return false;
+        }
+    }
 </script>
 <h1>RSS Feed</h1>
 <h2>Active Feed</h2>
@@ -58,7 +68,14 @@
     <ul>
         <li><a href="/hidden">Show Hidden Posts</a></li>
         <li>
-            <a href="/feeds">Manage sources</a>
+            <details>
+                <summary>Filter by Source</summary>
+                <ul>
+                    <% sources.map(({id, url}) => { %>
+                        <li><a href="/sources/<%= id %>"><%= url %></a></li>
+                    <% }) %>
+                </ul>
+            </details>
         </li>
     </ul>
 </nav>
@@ -78,7 +95,7 @@
                             <%= new Date(post.pubDate).toDateString() %>
                         </div>
                         <div class="buttons">
-                            <button onclick="hide(<%= post.id %>)">Hide Post</button>
+                          <button onclick="hide(<%= post.id %>)">Hide Post</button>
                         </div>
                     </summary>
                     <div><%- post.description %></div>

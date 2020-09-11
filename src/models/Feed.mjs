@@ -11,7 +11,7 @@ const parser = new Parser();
 export class ParsedFeed {
     static sanitize = (str = '', key) => {
         try {
-            return str.replace(/'/g, "''").replace(/\(/g, '⎛').replace(/\)/g, '⎞');
+            return str.replace(/'/g, "''");
         } catch (e) {
             console.error(key, str, e.message);
             return 'invalid';
@@ -29,9 +29,9 @@ export class ParsedFeed {
                     pubDate: new Date(item.pubDate).valueOf(),
                 };
             });
+
             return posts.map(({link, title, pubDate, content}) => {
-                const query = `('${ParsedFeed.sanitize(link, 'link')}', '${ParsedFeed.sanitize(title, 'title')}', '${ParsedFeed.sanitize(pubDate.toString(), 'pubDate')}',  ${Number(id)}, '${ParsedFeed.sanitize(content, 'content')}')`
-                return query;
+                return `('${ParsedFeed.sanitize(link, 'link')}', '${ParsedFeed.sanitize(title, 'title')}', '${ParsedFeed.sanitize(pubDate.toString(), 'pubDate')}',  ${Number(id)}, '${ParsedFeed.sanitize(content, 'content')}')`
             });
         } catch (e) {
             console.error('f', e.message)
@@ -63,8 +63,7 @@ export class Feed {
             let feed = [...values].filter(value => {
                 return Boolean(value) && value.length > 0;
             }).join(',\n')
-            const query = `INSERT or IGNORE INTO posts (link, title, pubDate, feed_id, description) VALUES ${feed};`;
-            console.log(JSON.stringify(query, null, 2))
+            const query = `INSERT or REPLACE INTO posts (link, title, pubDate, feed_id, description) VALUES ${feed};`;
             db.run(query, (e) => {
                 if (e) return handle(e);
                 console.log(`${values.length} added`)
