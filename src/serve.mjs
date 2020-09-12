@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import {db, getSources, sources} from "../index.mjs";
 import {getImage} from "./util.mjs";
 
@@ -9,6 +10,9 @@ app.use(express.urlencoded({
     extended: true
 }))
 app.use(express.json())
+
+const __dirname = path.resolve();
+app.use(express.static(__dirname + '/public'));
 
 app.set('view engine', 'ejs');
 

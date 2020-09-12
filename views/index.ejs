@@ -3,39 +3,12 @@
 <head>
     <meta charset="utf-8">
     <title>Reddit style RSS</title>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
     <!--[if IE]>
-    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <style>
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        summary {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .buttons > button {
-            background: blue;
-            margin: 2px 0;
-        }
-        .preview {
-            height: 60%;
-            width: auto;
-            padding: 0.5rem;
-            display: block;
-        }
+
     </style>
 </head>
 
@@ -68,17 +41,21 @@
             <li id='post-<%= post.id %>'>
                 <details>
                     <summary>
-                        <%if (post.preview) { %>
-                            <img class="preview" src="<%= post.preview %>" />
-                        <% } %>
-
-                        <div>
-                            <h3><a href="<%= post.link %>"><%= post.title %></a></h3>
-                            <small><%= post.link.split('/')[2] %></small>
-                            <%= new Date(post.pubDate).toDateString() %>
-                        </div>
-                        <div class="buttons">
-                            <button onclick="hide(<%= post.id %>)">Hide Post</button>
+                        <div class="vert-center">
+                            <div class="vert-center">
+                                <div class="votes">
+                                    <button class="reset-this vote" onclick="like(<%= post.id %>)">⟰</button>
+                                    <button class="reset-this vote" onclick="hide(<%= post.id %>)">⟱</button>
+                                </div>
+                                <% if (post.preview) { %>
+                                    <img class="preview" src="<%= post.preview %>" />
+                                <% } %>
+                            </div>
+                            <div>
+                                <h3><a href="<%= post.link %>"><%= post.title %></a></h3>
+                                <small><%= post.link.split('/')[2] %></small>
+                                <%= new Date(post.pubDate).toDateString() %>
+                            </div>
                         </div>
                     </summary>
                     <div><%- post.description %></div>
