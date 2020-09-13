@@ -65,11 +65,17 @@
         });
         location.reload();
     }
+    build = async () => {
+        await fetch(`/build`, {
+            method: "POST"
+        })
+    }
 </script>
 <h1>RSS Feed</h1>
 <h2>Active Feed</h2>
 <nav>
     <ul>
+        <li><button class="reset-this" onclick="build()">rebuild feed</button></li>
         <li><a href="/">Back to feed</a></li>
     </ul>
 </nav>

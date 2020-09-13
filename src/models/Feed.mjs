@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
-import {db} from "../../index.mjs";
+import {db, getSources} from "../../index.mjs";
+import {DB} from "../serve.mjs";
 
 const handle = (error, ...rest) => {
     console.log(error.message, ...rest);
@@ -20,7 +21,7 @@ export class ParsedFeed {
     static build = async ({id, url}) => {
         try {
             const feed = await parser.parseURL(url);
-            const posts = await feed.items.map(item => {
+            const posts = feed.items.map(item => {
                 delete item['content:encoded'];
                 delete item['content:encodedSnippet'];
 
@@ -34,39 +35,39 @@ export class ParsedFeed {
                 return `('${ParsedFeed.sanitize(link, 'link')}', '${ParsedFeed.sanitize(title, 'title')}', '${ParsedFeed.sanitize(pubDate.toString(), 'pubDate')}',  ${Number(id)}, '${ParsedFeed.sanitize(content, 'content')}')`
             });
         } catch (e) {
-            console.error('f', e.message)
+            return console.error('f', e.message, url)
         }
     }
 }
 
 export class Feed {
-    static add = (url) => {
-        if (url) db.run(`INSERT INTO feeds (url) VALUES('${url}');`, (e) => {
-            if (e) handle(e);
-
-            console.log(`${url} added to feeds`)
-            process.exit();
+    static add = async (url) => {
+        return new Promise(async (resolve) => {
+            if (url.match(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g)) {
+                await DB.run(`insert into feeds (url) values('${url}')`);
+                getSources();
+                resolve();
+            }
         })
     }
 
-    static getAll = (cb) => {
-        db.all(`SELECT * FROM feeds`, (e, rows) => {
-            if (e) handle(e);
-            if (cb) cb(rows);
-        })
+    static getAll = () => {
+        return DB.all(`SELECT * FROM feeds`);
+
     }
     static build = () => {
-        Feed.getAll(async (rows) => {
+        return new Promise(async (resolve, reject) => {
+            const rows = await Feed.getAll()
             let values = await Promise.all(rows.map(row => {
                 return ParsedFeed.build(row)
             }));
             let feed = [...values].filter(value => {
                 return Boolean(value) && value.length > 0;
             }).join(',\n')
-            const query = `INSERT or REPLACE INTO posts (link, title, pubDate, feed_id, description) VALUES ${feed};`;
+            const query = `INSERT or IGNORE INTO posts (link, title, pubDate, feed_id, description) VALUES ${feed};`;
             db.run(query, (e) => {
-                if (e) return handle(e);
-                console.log(`${values.length} added`)
+                if (e) reject(e);
+                resolve();
             });
         })
     }
