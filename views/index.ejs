@@ -24,12 +24,22 @@
             return false;
         }
     }
+    const like = async (id) => {
+        const res = await fetch(`/like/${id}`, {
+            method: 'POST'
+        })
+        if (res.ok) {
+            location.reload();
+            return false;
+        }
+    }
 </script>
 <h1>RSS Feed</h1>
 <h2>Active Feed</h2>
 <nav>
     <ul>
-        <li><a href="/hidden">Show Hidden Posts</a></li>
+        <li><a href="/downvoted">Show Downvoted Posts</a></li>
+        <li><a href="/liked">Show Liked Posts</a></li>
         <li>
             <a href="/feeds">Manage sources</a>
         </li>
@@ -52,7 +62,7 @@
                                 <% } %>
                             </div>
                             <div>
-                                <h3><a href="<%= post.link %>"><%= post.title %></a></h3>
+                                <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title %></a></h3>
                                 <small><%= post.link.split('/')[2] %></small>
                                 <%= new Date(post.pubDate).toDateString() %>
                             </div>

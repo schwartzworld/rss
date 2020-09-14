@@ -1,8 +1,8 @@
 import express from 'express';
 import path from 'path';
 import {db, getSources, sources} from "../index.mjs";
-import {getImage} from "./util.mjs";
 import {Feed} from "./models/Feed.mjs";
+import {Post} from "./models/Post.mjs";
 
 const app = express()
 const port = 3001;
@@ -16,43 +16,6 @@ const __dirname = path.resolve();
 app.use(express.static(__dirname + '/public'));
 
 app.set('view engine', 'ejs');
-
-export class DB {
-    static all = (query) => {
-        return new Promise((resolve, reject) => {
-            db.all(query, (e, data) => {
-                if (e) reject(e);
-                resolve(data);
-            })
-        })
-    }
-    static run = (query) => {
-        return new Promise((resolve, reject) => {
-            db.run(query, (e, data) => {
-                if (e) reject(e);
-                resolve(data);
-            })
-        })
-    }
-}
-
-export class Post {
-    static getNew = async (page = 1) => {
-        const limit = 20;
-        const offset = page > 1 ? ` OFFSET ${page * limit}` :''
-        const p = await DB.all(`select * from posts where hidden=0 ORDER BY pubDate DESC LIMIT ${limit}${offset};`)
-        const posts = p.map(post => {
-            const preview = getImage(post.description);
-            if (preview) post.preview = preview;
-            return post;
-        })
-        return {
-            posts,
-            previous: `/?page=${Math.max(Number(page) - 1, 1)}`,
-            next: `/?page=${Number(page) + 1}`,
-        }
-    }
-}
 
 app.get('/', async (req, res) => {
     res.set('Cache-Control', 'no-store')
@@ -73,7 +36,7 @@ app.get('/sources/:source', (req, res) => {
     db.all(`select * from posts where hidden=0 AND feed_id=${feedId} ORDER BY pubDate DESC LIMIT ${limit}${offset};`, (e, posts) => {
         if (e) return console.error(e.message);
         posts.forEach(post => {
-            const preview = getImage(post.description);
+            const preview = Post.getImage(post.description);
             if (preview) post.preview = preview;
         })
         res.render('sources', {
@@ -85,7 +48,7 @@ app.get('/sources/:source', (req, res) => {
     })
 });
 
-app.get('/hidden', (req, res) => {
+app.get('/downvoted', (req, res) => {
     let page = req.query.page || 1;
     let limit = 10;
     const offset = page > 1 ? ` OFFSET ${page * limit}` :''
@@ -100,20 +63,37 @@ app.get('/hidden', (req, res) => {
     })
 });
 
-app.post('/hide/:id', (req, res) => {
-    const { id } = req.params;
-    db.run(`UPDATE posts SET hidden=1 WHERE id=${id}`, (e) => {
+app.get('/liked', (req, res) => {
+    let page = req.query.page || 1;
+    let limit = 10;
+    const offset = page > 1 ? ` OFFSET ${page * limit}` :''
+    db.all(`select * from posts where hidden=2 ORDER BY pubDate DESC LIMIT ${limit}${offset};`, (e, posts) => {
         if (e) return console.error(e.message);
-        res.end('honky dokey')
+
+        res.render('hidden', {
+            posts,
+            previous: `/?page=${Math.max(Number(page) - 1, 1)}`,
+            next: `/?page=${Number(page) + 1}`,
+        })
     })
+});
+
+app.post('/hide/:id', async (req, res) => {
+    const { id } = req.params;
+    await Post.hide(id);
+    res.end('honky dokey')
 })
 
-app.post('/unhide/:id', (req, res) => {
+app.post('/like/:id', async (req, res) => {
     const { id } = req.params;
-    db.run(`UPDATE posts SET hidden=0 WHERE id=${id}`, (e) => {
-        if (e) return console.error(e.message);
-        res.end('honky dokey')
-    })
+    await Post.like(id);
+    res.end('honky dokey')
+})
+
+app.post('/unhide/:id', async (req, res) => {
+    const { id } = req.params;
+    await Post.unhide(id)
+    res.end('honky dokey')
 })
 
 export const serve = () => {
@@ -133,6 +113,7 @@ app.post('/feeds', async(req, res) => {
     const { name } = req.body;
         try {
             await Feed.add(name);
+            await Feed.build();
             res.redirect('/feeds')
         } catch (e) {
             res.end(e.message);
@@ -144,12 +125,8 @@ app.post('/build', async (req, res) => {
     res.redirect('/dashboard');
 });
 
-app.delete('/feeds/:id', (req, res) => {
+app.delete('/feeds/:id', async (req, res) => {
     const { id } = req.params;
-    db.run(`DELETE FROM feeds WHERE id=${id};`, (e) => {
-        if (e) console.error(e.message);
-        getSources(() => {
-            res.redirect('/feeds')
-        });
-    });
+    await Feed.delete(id);
+    res.redirect('/feeds')
 });

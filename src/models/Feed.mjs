@@ -1,11 +1,6 @@
 import Parser from "rss-parser";
 import {db, getSources} from "../../index.mjs";
-import {DB} from "../serve.mjs";
-
-const handle = (error, ...rest) => {
-    console.log(error.message, ...rest);
-    process.exit();
-};
+import {DB} from "../util/DB.mjs";
 
 const parser = new Parser();
 
@@ -45,10 +40,16 @@ export class Feed {
         return new Promise(async (resolve) => {
             if (url.match(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g)) {
                 await DB.run(`insert into feeds (url) values('${url}')`);
-                getSources();
-                resolve();
+                getSources(async() => {
+                    resolve();
+                });
             }
         })
+    }
+
+    static delete = async (id) => {
+        await DB.run(`DELETE FROM feeds WHERE id=${id};`);
+        return getSources();
     }
 
     static getAll = () => {
