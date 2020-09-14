@@ -41,6 +41,7 @@ export class Feed {
             if (url.match(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g)) {
                 await DB.run(`insert into feeds (url) values('${url}')`);
                 getSources(async() => {
+                    console.log(`${url} added`)
                     resolve();
                 });
             }
@@ -49,6 +50,7 @@ export class Feed {
 
     static delete = async (id) => {
         await DB.run(`DELETE FROM feeds WHERE id=${id};`);
+        console.log(`${id} deleted`)
         return getSources();
     }
 
