@@ -1,6 +1,6 @@
 import express from 'express';
 import path from 'path';
-import {db, getSources, sources} from "../index.mjs";
+import {db, sources} from "../index.mjs";
 import {Feed} from "./models/Feed.mjs";
 import {Post} from "./models/Post.mjs";
 
@@ -28,8 +28,8 @@ app.get('/', async (req, res) => {
     })
 });
 
-app.get('/sources/:source', (req, res) => {
-    let feedId = req.params.source;
+app.get('/feeds/:feedId', (req, res) => {
+    let feedId = Number(req.params.feedId);
     let page = req.query.page || 1;
     let limit = 10;
     const offset = page > 1 ? ` OFFSET ${page * limit}` :''
@@ -104,7 +104,7 @@ export const serve = () => {
 
 
 app.get('/feeds', (req, res) => {
-    res.render('dashboard', {
+    res.render('feeds', {
         sources,
     })
 });
@@ -113,7 +113,6 @@ app.post('/feeds', async(req, res) => {
     const { name } = req.body;
         try {
             await Feed.add(name);
-            await Feed.build();
             res.redirect('/feeds')
         } catch (e) {
             res.end(e.message);
@@ -122,7 +121,7 @@ app.post('/feeds', async(req, res) => {
 
 app.post('/build', async (req, res) => {
     await Feed.build();
-    res.redirect('/dashboard');
+    res.redirect('/feeds');
 });
 
 app.delete('/feeds/:id', async (req, res) => {

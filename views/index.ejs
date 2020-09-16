@@ -62,7 +62,7 @@
                                 <% } %>
                             </div>
                             <div>
-                                <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title %></a></h3>
+                                <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title || 'No Title Provided' %></a></h3>
                                 <small><%= post.link.split('/')[2] %></small>
                                 <%= new Date(post.pubDate).toDateString() %>
                             </div>

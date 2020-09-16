@@ -3,47 +3,22 @@
 <head>
     <meta charset="utf-8">
     <title>Reddit style RSS</title>
-    <link rel="stylesheet" href="../public/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
     <!--[if IE]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <style>
-        ul {
-            list-style: none;
-            padding: 0;
-            width: 100%;
-        }
         li {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            padding: 2px 10px;
         }
         li:hover {
-            background: #444;
+            background: lightblue;
         }
-        summary {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .buttons > button {
-            background: blue;
-            margin: 2px 0;
-        }
-        .preview {
-            height: 60%;
-            width: auto;
-            padding: 0.5rem;
-            display: block;
+        li:hover > a {
+            color: black;
         }
     </style>
 </head>
@@ -75,7 +50,6 @@
 <h2>Active Feed</h2>
 <nav>
     <ul>
-        <li><button class="reset-this" onclick="build()">rebuild feed</button></li>
         <li><a href="/">Back to feed</a></li>
     </ul>
 </nav>
@@ -87,7 +61,7 @@
             <input type="submit" />
         </form>
         <% sources.map(({id, url}) => { %>
-            <li><a href="/sources/<%= id %>"><%= url %></a> <button onclick="removeFeed(<%= id %>)">delete feed</button></li>
+            <li><a href="/feeds/<%= id %>"><%= url %></a> <button onclick="removeFeed(<%= id %>)">delete feed</button></li>
         <% }) %>
     </ul>
 </div>

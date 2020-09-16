@@ -17,4 +17,12 @@ export class DB {
             })
         })
     }
+    static get = (query) => {
+        return new Promise((resolve, reject) => {
+            db.get(query, (e, data) => {
+                if (e) reject(e);
+                resolve(data);
+            })
+        })
+    }
 }

@@ -19,10 +19,10 @@ export class ParsedFeed {
             const posts = feed.items.map(item => {
                 delete item['content:encoded'];
                 delete item['content:encodedSnippet'];
-
+                const pubDate = new Date(item.pubDate).valueOf();
                 return {
                     ...item,
-                    pubDate: new Date(item.pubDate).valueOf(),
+                    pubDate
                 };
             });
 
@@ -39,18 +39,26 @@ export class Feed {
     static add = async (url) => {
         return new Promise(async (resolve) => {
             if (url.match(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g)) {
-                await DB.run(`insert into feeds (url) values('${url}')`);
+                const x = await DB.run(`insert into feeds (url) values('${url}')`);
                 getSources(async() => {
                     console.log(`${url} added`)
-                    resolve();
+                    resolve(x);
                 });
             }
         })
     }
 
+    static get = async ({ url }) => {
+        return DB.get(`SELECT * FROM feeds WHERE url='${url}';`)
+    }
+
+    static insert = async (values) => {
+        const query = `INSERT or IGNORE INTO posts (link, title, pubDate, feed_id, description) VALUES ${values};`;
+        return DB.run(query);
+    }
+
     static delete = async (id) => {
         await DB.run(`DELETE FROM feeds WHERE id=${id};`);
-        console.log(`${id} deleted`)
         return getSources();
     }
 
@@ -58,20 +66,17 @@ export class Feed {
         return DB.all(`SELECT * FROM feeds`);
 
     }
-    static build = () => {
-        return new Promise(async (resolve, reject) => {
-            const rows = await Feed.getAll()
-            let values = await Promise.all(rows.map(row => {
-                return ParsedFeed.build(row)
-            }));
-            let feed = [...values].filter(value => {
-                return Boolean(value) && value.length > 0;
-            }).join(',\n')
-            const query = `INSERT or IGNORE INTO posts (link, title, pubDate, feed_id, description) VALUES ${feed};`;
-            db.run(query, (e) => {
-                if (e) reject(e);
-                resolve();
-            });
-        })
+
+    static build = async () => {
+        const rows = await Feed.getAll()
+        let values = await Promise.all(rows.map(row => {
+            return ParsedFeed.build(row)
+        }));
+        let feed = [...values].filter(value => {
+            return Boolean(value) && value.length > 0;
+        }).join(',\n')
+        await Feed.insert(feed);
+        console.log('Feed newly built')
+
     }
 }
