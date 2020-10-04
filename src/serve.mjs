@@ -97,7 +97,7 @@ app.post('/unhide/:id', async (req, res) => {
 })
 
 export const serve = () => {
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0', () => {
         console.log(`Serving up the RSS Reader on ${port}`)
     })
 }
