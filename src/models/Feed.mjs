@@ -70,25 +70,24 @@ export class Feed {
 
     }
 
-    static buildIndivdual = async () => {
-        let row = await ParsedFeed.build(urls[counter % urls.length])
+    static buildIndivdual = async (rowId) => {
+        const r = rowId || urls[counter % urls.length];
+        console.log("Building " + r)
+        let row = await ParsedFeed.build(r)
         if (row) {
             await Feed.insert(row);
-            counter++;
+           if (rowId) counter++;
+            console.log(r + ' built')
         }
     }
 
     static build = async () => {
         const rows = await Feed.getAll();
         urls = rows;
-        let values = await Promise.all(rows.map(row => {
-            return ParsedFeed.build(row)
-        }));
-        let feed = [...values].filter(value => {
-            return Boolean(value) && value.length > 0;
-        }).join(',\n')
-        await Feed.insert(feed);
-        console.log('Feed newly built')
+        for (let row of rows) {
+            await Feed.buildIndivdual(row)
+        }
+
 
     }
 }
