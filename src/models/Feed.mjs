@@ -35,6 +35,9 @@ export class ParsedFeed {
     }
 }
 
+let urls;
+let counter = 0;
+
 export class Feed {
     static add = async (url) => {
         return new Promise(async (resolve) => {
@@ -67,8 +70,17 @@ export class Feed {
 
     }
 
+    static buildIndivdual = async () => {
+        let row = await ParsedFeed.build(urls[counter % urls.length])
+        if (row) {
+            await Feed.insert(row);
+            counter++;
+        }
+    }
+
     static build = async () => {
-        const rows = await Feed.getAll()
+        const rows = await Feed.getAll();
+        urls = rows;
         let values = await Promise.all(rows.map(row => {
             return ParsedFeed.build(row)
         }));
