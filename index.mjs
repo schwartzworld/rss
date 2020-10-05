@@ -10,7 +10,7 @@ let buildTimer;
 export const db = new s.Database('./feeds.db', (err) => {
 	if (err) return console.error(err.message);
 	Feed.build().then(() => {
-		buildTimer = setInterval(Feed.build, 150000);
+		buildTimer = setInterval(Feed.build, 5000000);
 		getSources(() =>{
 
 			main(rest);
