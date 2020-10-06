@@ -36,7 +36,7 @@ export class ParsedFeed {
 }
 
 let urls = [];
-let counter = 0;
+let counter = Math.floor(Math.random() * 20);
 
 export class Feed {
     static add = async (url) => {
