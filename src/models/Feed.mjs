@@ -35,7 +35,7 @@ export class ParsedFeed {
     }
 }
 
-let urls;
+let urls = [];
 let counter = 0;
 
 export class Feed {
@@ -72,22 +72,21 @@ export class Feed {
 
     static buildIndivdual = async (rowId) => {
         const r = rowId || urls[counter % urls.length];
-        console.log("Building " + r)
-        let row = await ParsedFeed.build(r)
-        if (row) {
-            await Feed.insert(row);
-           if (rowId) counter++;
-            console.log(r + ' built')
+        console.log("Building " + r.url)
+        if (r.url && r.url.length > 0) {
+            let row = await ParsedFeed.build(r)
+            if (row) {
+                await Feed.insert(row);
+                if (!rowId) counter++;
+                console.log(r.url + ' built')
+            }
+        } else {
+            console.log(JSON.stringify(r))
         }
     }
 
     static build = async () => {
         const rows = await Feed.getAll();
         urls = rows;
-        for (let row of rows) {
-            await Feed.buildIndivdual(row)
-        }
-
-
     }
 }
