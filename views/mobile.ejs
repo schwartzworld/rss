@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Reddit style RSS</title>
+    <!--[if IE]>
+    <![endif]-->
+    <style>
+        body {
+            font-size: 200%;
+            background: #111;
+            color: #616f39;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        img {
+            max-width: 85vw !important;
+            margin: auto !important;
+        }
+        a {
+            color: #8b7b00;
+        }
+        a:visited {
+            color: #569551;
+        }
+        main {
+            width: calc(100vw - 4rem);
+            height: 80vh;
+            font-size: 150%;
+            padding: 2rem;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        #stats {
+            font-size: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #actions {
+            display: flex;
+            justify-content: space-between;
+            position: fixed;
+            width: 100vw;
+            bottom: 0;
+            left: 0;
+        }
+        .action {
+            height: 6rem;
+            width: 15%;
+            background: #003200;
+            color: #8b7b00 !important;
+            display: block;
+            margin: 1rem;
+            border: 5px outset #107101;
+            padding: 0;
+            text-align: center;
+            line-height: 6rem;
+            font-size: 3rem;
+            text-decoration: none;
+        }
+        #actualPost {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            word-wrap: break-word;
+            height: calc(100% - 4rem);
+            overflow: scroll;
+        }
+    </style>
+</head>
+
+<body id="home">
+
+<script>
+    const hide = async (id) => {
+        const res = await fetch(`/hide/${id}`, {
+            method: 'POST'
+        })
+        if (res.ok) {
+            location.reload();
+            return false;
+        }
+    }
+    const like = async (id) => {
+        const res = await fetch(`/like/${id}`, {
+            method: 'POST'
+        })
+        if (res.ok) {
+            location.reload();
+            return false;
+        }
+    }
+</script>
+<h1><a href="/m">RSS Feed</a></h1>
+
+<main>
+    <div id="stats">
+        <small><%= post.link.split('/')[2] %></small>
+        <%= new Date(post.pubDate).toDateString() %>
+    </div>
+
+    <section id="actualPost">
+        <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title || 'No Title Provided' %></a></h3>
+
+        <div><%- post.description %></div>
+    </section>
+    <div id="actions">
+        <button class="action" onclick="like(<%= post.id %>)">⟰</button>
+        <button class="action" onclick="hide(<%= post.id %>)">⟱</button>
+        <a class="action" href="/m<%= previous %>">prev</a>
+        <a class="action" href="/m<%= next %>">next</a>
+        <a class="action" href="https://news.ycombinator.com/submitlink?u=<%= encodeURIComponent(post.link) %>&t=<%= encodeURIComponent(post.title) %>">HN</a>
+    </div>
+</main>
+</body>
+</html>
+

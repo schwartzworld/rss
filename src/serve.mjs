@@ -28,6 +28,17 @@ app.get('/', async (req, res) => {
     })
 });
 
+app.get('/m/', async (req, res) => {
+    res.set('Cache-Control', 'no-store')
+    const {posts, previous, next} = await Post.getNew(req.query.page, 1)
+    res.render('mobile', {
+        sources,
+        post: posts[0],
+        previous,
+        next
+    })
+});
+
 app.get('/feeds/:feedId', (req, res) => {
     let feedId = Number(req.params.feedId);
     let page = req.query.page || 1;

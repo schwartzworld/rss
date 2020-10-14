@@ -1,8 +1,7 @@
 import {DB} from "../util/DB.mjs";
 
 export class Post {
-    static getNew = async (page = 1) => {
-        const limit = 20;
+    static getNew = async (page = 1, limit = 20) => {
         const offset = page > 1 ? ` OFFSET ${page * limit}` : ''
         const p = await DB.all(`select * from posts where hidden=0 ORDER BY pubDate DESC LIMIT ${limit}${offset};`)
         const posts = p.map(post => {
