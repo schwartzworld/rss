@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Reddit style RSS</title>
-    <!--[if IE]>
-    <![endif]-->
+    <title><%= post.title %></title>
     <style>
         body {
             font-size: 200%;
@@ -12,10 +10,13 @@
             color: #616f39;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             align-items: center;
             position: fixed;
             top: 0;
             left: 0;
+            height: 100vh;
+            width: 100vw;
         }
         img {
             max-width: 85vw !important;
@@ -41,14 +42,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            background: pink;
         }
         #actions {
             display: flex;
             justify-content: space-between;
-            position: fixed;
             width: 100vw;
-            bottom: 0;
-            left: 0;
         }
         .action {
             height: 6rem;
@@ -97,27 +96,26 @@
         }
     }
 </script>
-<h1><a href="/m">RSS Feed</a></h1>
-
-<main>
+<header>
+    <h1><a href="/m">RSS Feed</a></h1>
     <div id="stats">
         <small><%= post.link.split('/')[2] %></small>
         <%= new Date(post.pubDate).toDateString() %>
     </div>
-
+</header>
+<main>
     <section id="actualPost">
         <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title || 'No Title Provided' %></a></h3>
 
         <div><%- post.description %></div>
     </section>
-    <div id="actions">
-        <button class="action" onclick="like(<%= post.id %>)">⟰</button>
-        <button class="action" onclick="hide(<%= post.id %>)">⟱</button>
-        <a class="action" href="/m<%= previous %>">prev</a>
-        <a class="action" href="/m<%= next %>">next</a>
-        <a class="action" href="https://news.ycombinator.com/submitlink?u=<%= encodeURIComponent(post.link) %>&t=<%= encodeURIComponent(post.title) %>">HN</a>
-    </div>
 </main>
+<div id="actions">
+    <button class="action" onclick="like(<%= post.id %>)">save</button>
+    <a class="action" href="/m<%= next %>">skip</a>
+    <a class="action" href="https://news.ycombinator.com/submitlink?u=<%= encodeURIComponent(post.link) %>&t=<%= encodeURIComponent(post.title) %>">HN</a>
+    <button class="action" onclick="hide(<%= post.id %>)">hide</button>
+</div>
 </body>
 </html>
 
