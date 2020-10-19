@@ -12,11 +12,11 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            position: fixed;
             top: 0;
             left: 0;
             height: 100vh;
-            width: 100vw;
+            width: calc(100vw - 4rem);
+            margin: 0 2rem;
         }
         img {
             max-width: 85vw !important;
@@ -28,12 +28,6 @@
         a:visited {
             color: #569551;
         }
-        main {
-            width: calc(100vw - 4rem);
-            height: 80vh;
-            font-size: 150%;
-            padding: 2rem;
-        }
         h1, h2, h3 {
             text-align: center;
         }
@@ -42,12 +36,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: pink;
         }
         #actions {
+            position: sticky;
+            bottom: 0;
             display: flex;
             justify-content: space-between;
             width: 100vw;
+            background: #111;
         }
         .action {
             height: 6rem;
@@ -68,8 +64,8 @@
             flex-direction: column;
             align-items: center;
             word-wrap: break-word;
-            height: calc(100% - 4rem);
             overflow: scroll;
+            flex-grow: 1;
         }
     </style>
 </head>
@@ -98,18 +94,16 @@
 </script>
 <header>
     <h1><a href="/m">RSS Feed</a></h1>
+</header>
+<section id="actualPost">
     <div id="stats">
         <small><%= post.link.split('/')[2] %></small>
         <%= new Date(post.pubDate).toDateString() %>
     </div>
-</header>
-<main>
-    <section id="actualPost">
-        <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title || 'No Title Provided' %></a></h3>
+    <h3><a href="<%= post.link %>" target="_blank" rel="noopener"><%= post.title || 'No Title Provided' %></a></h3>
 
-        <div><%- post.description %></div>
-    </section>
-</main>
+    <%- post.description %>
+</section>
 <div id="actions">
     <button class="action" onclick="like(<%= post.id %>)">save</button>
     <a class="action" href="/m<%= next %>">skip</a>
