@@ -31,9 +31,11 @@ app.get('/', async (req, res) => {
 app.get('/m/', async (req, res) => {
     res.set('Cache-Control', 'no-store')
     const {posts, previous, next} = await Post.getNew(req.query.page, 1)
+    posts[0].description = sanitize(posts[0].description);
+
     res.render('mobile', {
         sources,
-        post: sanitize(posts[0]),
+        post: (posts[0]),
         previous,
         next
     })
@@ -148,7 +150,6 @@ app.delete('/feeds/:id', async (req, res) => {
 });
 
 const sanitize = str => str
-    .replace(/(<([^>]+)>)/gi, "")
     .replace(/^<style.*$/m, '')
     .replace(/^<iframe.*$/m, '')
     .replace(/^<script.*$/m, '')
