@@ -33,7 +33,7 @@ app.get('/m/', async (req, res) => {
     const {posts, previous, next} = await Post.getNew(req.query.page, 1)
     res.render('mobile', {
         sources,
-        post: posts[0],
+        post: sanitize(posts[0]),
         previous,
         next
     })
@@ -49,6 +49,7 @@ app.get('/feeds/:feedId', (req, res) => {
         posts.forEach(post => {
             const preview = Post.getImage(post.description);
             if (preview) post.preview = preview;
+            post.description = sanitize(post.description)
         })
         res.render('sources', {
             posts,
@@ -145,3 +146,9 @@ app.delete('/feeds/:id', async (req, res) => {
     await Feed.delete(id);
     res.redirect('/feeds')
 });
+
+const sanitize = str => str
+    .replace(/(<([^>]+)>)/gi, "")
+    .replace(/^<style.*$/m, '')
+    .replace(/^<iframe.*$/m, '')
+    .replace(/^<script.*$/m, '')

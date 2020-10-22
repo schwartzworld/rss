@@ -26,21 +26,44 @@
 <body id="home">
 
 <script>
-    removeFeed = async (id) => {
+    const sources = <%- JSON.stringify(sources) %>;
+
+    const toList = (sources) => sources.map(({id, url}) => {
+        return `<li style="list-style: none;">
+                <a href="/feeds/${id}">${url}</a>
+                <div>
+                    <button onclick="build(${id})">build feed</button>
+                    <button onclick="removeFeed(${id})">delete feed</button>
+                </div>
+            </li>`
+    }).join('')
+
+    const updateSources = () => {
+        const input = document.querySelector('#name');
+        let displaySources = sources;
+        if (input.value !== '') {
+            displaySources= sources.filter(({id, url}) => {
+                return url.includes(input.value)
+            })
+        }
+        const ul = document.querySelector('#sources');
+        ul.innerHTML = toList(displaySources);
+    }
+    window.removeFeed = async (id) => {
         await fetch(`/feeds/${id}`, {
             method: 'DELETE',
         });
         location.reload();
     }
 
-    addFeed = async (url) => {
+    window.addFeed = async (url) => {
         await fetch(`/feeds/${id}`, {
             method: 'POST',
             body: url,
         });
         location.reload();
     }
-    build = async (id) => {
+    window.build = async (id) => {
         await fetch(`/build/${id}`, {
             method: "POST"
         })
@@ -54,12 +77,12 @@
     </ul>
 </nav>
 <div>
-    <ul>
-        <form action="/feeds" method="post">
-            <label for="name">Subscribe to a new Feed</label><br />
-            <input id='name' name='name' type="text" placeholder="Enter a feed to subscribe">
-            <input type="submit" />
-        </form>
+    <form action="/feeds" method="post">
+        <label for="name">Subscribe to a new Feed</label><br />
+        <input id='name' name='name' type="text" placeholder="Enter a feed to subscribe" oninput="updateSources()">
+        <input type="submit" />
+    </form>
+    <ul id="sources">
         <% sources.map(({id, url}) => { %>
             <li>
                 <a href="/feeds/<%= id %>"><%= url %></a>

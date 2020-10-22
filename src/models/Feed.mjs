@@ -79,7 +79,7 @@ export class Feed {
         })
         if (row) {
             await Feed.insert(row);
-            console.log(url + ' buigitallt')
+            console.log(url + ' built on demand')
         }
     }
 
