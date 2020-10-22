@@ -15,6 +15,7 @@ export class ParsedFeed {
     }
     static build = async ({id, url}) => {
         try {
+            console.log({ id, url })
             const feed = await parser.parseURL(url);
             const posts = feed.items.map(item => {
                 delete item['content:encoded'];
@@ -70,8 +71,20 @@ export class Feed {
 
     }
 
-    static buildIndivdual = async (rowId) => {
-        const r = rowId || urls[counter % urls.length];
+    static buildIndividualById = async (feedId) => {
+        const id = Number(feedId)
+        const {url} = await DB.get(`SELECT url FROM feeds WHERE id=${id}`)
+        let row = await ParsedFeed.build({
+            id, url: url
+        })
+        if (row) {
+            await Feed.insert(row);
+            console.log(url + ' buigitallt')
+        }
+    }
+
+    static buildIndivdual = async () => {
+        const r = urls[counter % urls.length];
         try {
             console.log("Building " + r.url)
             if (r.url && r.url.length > 0) {

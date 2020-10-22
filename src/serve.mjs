@@ -135,6 +135,11 @@ app.post('/build', async (req, res) => {
     res.redirect('/feeds');
 });
 
+app.post('/build/:id', async (req, res) => {
+    await Feed.buildIndividualById(Number(req.params.id));
+    res.redirect('/feeds');
+});
+
 app.delete('/feeds/:id', async (req, res) => {
     const { id } = req.params;
     await Feed.delete(id);

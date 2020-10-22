@@ -40,8 +40,8 @@
         });
         location.reload();
     }
-    build = async () => {
-        await fetch(`/build`, {
+    build = async (id) => {
+        await fetch(`/build/${id}`, {
             method: "POST"
         })
     }
@@ -61,7 +61,13 @@
             <input type="submit" />
         </form>
         <% sources.map(({id, url}) => { %>
-            <li><a href="/feeds/<%= id %>"><%= url %></a> <button onclick="removeFeed(<%= id %>)">delete feed</button></li>
+            <li>
+                <a href="/feeds/<%= id %>"><%= url %></a>
+                <div>
+                    <button onclick="build(<%= id %>)">build feed</button>
+                    <button onclick="removeFeed(<%= id %>)">delete feed</button>
+                </div>
+            </li>
         <% }) %>
     </ul>
 </div>
