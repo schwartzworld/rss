@@ -42,6 +42,9 @@
 <body id="home">
 
 <script>
+    const sources = <%- JSON.stringify(posts) %>;
+    console.log(sources)
+
     const hide = async (id) => {
         const res = await fetch(`/hide/${id}`, {
             method: 'POST'
